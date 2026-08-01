@@ -1,28 +1,34 @@
 /* BioPro Developer Site - Vanilla CSS Architecture */
 
 :root {
-  /* Premium Dark Theme Core */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
+  /* BioPro Default Theme Core */
+  --bg-primary: #0d1117;     /* BG_DARKEST */
+  --bg-secondary: #161b22;   /* BG_DARK */
+  --bg-tertiary: #21262d;    /* BG_MEDIUM */
+  --bg-light: #30363d;       /* BG_LIGHT */
   
   /* Text */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #c9d1d9;   /* FG_PRIMARY */
+  --text-secondary: #8b949e; /* FG_SECONDARY */
+  --text-muted: #484f58;     /* FG_DISABLED */
   
   /* Accents */
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-glow: rgba(59, 130, 246, 0.5);
+  --accent-primary: #2f81f7;
+  --accent-hover: #388bfd;
+  --accent-pressed: #0550ae;
+  --accent-glow: rgba(47, 129, 247, 0.4);
+  
+  /* Special DNA Colors from Core */
+  --dna-primary: #00f2ff;
+  --dna-secondary: #a371f7;
   
   /* Borders */
-  --border-light: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.2);
+  --border-light: #30363d;
+  --border-strong: #58a6ff;
   
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  /* Glassmorphism Variables adjusted for new theme */
+  --glass-bg: rgba(22, 27, 34, 0.7);
+  --glass-border: rgba(48, 54, 61, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --glass-blur: blur(12px);
   
@@ -39,10 +45,10 @@
 body {
   background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(0, 242, 255, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(163, 113, 247, 0.05), transparent 25%);
   color: var(--text-primary);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: sans-serif;
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
@@ -63,6 +69,15 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.2;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 /* Animations */
