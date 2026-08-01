@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import KeyGeneratorWizard from '@/components/KeyGeneratorWizard/KeyGeneratorWizard';
+import TrustChain from '@/components/TrustChain/TrustChain';
 import { revalidatePath } from 'next/cache';
 
 export default async function OnboardPage() {
@@ -84,6 +85,8 @@ export default async function OnboardPage() {
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
             <strong>Signed By:</strong> {developer.issuer_name}
           </div>
+
+          <TrustChain startingPublicKey={developer.public_key_hex} />
         </div>
       )}
     </div>

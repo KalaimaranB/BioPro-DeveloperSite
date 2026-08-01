@@ -1,0 +1,92 @@
+.trustChainContainer {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.title {
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.chain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nodeWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.node {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.node:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+}
+
+.rootNode {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.rootNode:hover {
+  border-color: rgba(16, 185, 129, 0.8);
+}
+
+.username {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.key {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #10b981;
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.badgeUser {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  background: var(--accent-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.arrow {
+  color: var(--text-muted);
+}

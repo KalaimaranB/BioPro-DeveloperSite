@@ -26,7 +26,7 @@ export default async function ModuleSettingsPage({ params }: { params: Promise<{
   // Fetch all collaborators
   const { data: allCollabs } = await supabase
     .from('module_collaborators')
-    .select('role, developers(github_username)')
+    .select('role, contribution_description, developers(github_username)')
     .eq('module_id', id);
 
   async function updateCiKey(formData: FormData) {
@@ -47,6 +47,7 @@ export default async function ModuleSettingsPage({ params }: { params: Promise<{
     const supabaseAction = await createClient();
     const githubUsername = formData.get('githubUsername') as string;
     const role = formData.get('role') as string;
+    const desc = formData.get('description') as string;
 
     // Find developer by github_username
     const { data: dev } = await supabaseAction
@@ -64,7 +65,8 @@ export default async function ModuleSettingsPage({ params }: { params: Promise<{
       .insert({
         module_id: id,
         developer_id: dev.id,
-        role: role
+        role: role,
+        contribution_description: desc || null
       });
 
     revalidatePath(`/dashboard/module/${id}`);
@@ -85,36 +87,49 @@ export default async function ModuleSettingsPage({ params }: { params: Promise<{
         <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Current Collaborators</h3>
         <ul style={{ marginBottom: '2rem', listStyle: 'none', padding: 0 }}>
           {allCollabs?.map((c: any, i) => (
-            <li key={i} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-              <span>@{c.developers.github_username}</span>
-              <span style={{ color: 'var(--text-muted)' }}>{c.role}</span>
+            <li key={i} style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 'bold' }}>@{c.developers.github_username}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textTransform: 'capitalize' }}>{c.role}</span>
+              </div>
+              {c.contribution_description && (
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  {c.contribution_description}
+                </div>
+              )}
             </li>
           ))}
         </ul>
 
         <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Add Collaborator</h3>
-        <form action={addCollaborator} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1 }}>
+        <form action={addCollaborator} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem' }}>
             <input 
               name="githubUsername" 
               placeholder="GitHub Username" 
               required 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+              style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
             />
-          </div>
-          <div>
             <select 
               name="role" 
               required
               style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
             >
+              <option value="contributor">Contributor</option>
               <option value="maintainer">Maintainer</option>
               <option value="owner">Owner</option>
             </select>
           </div>
-          <button type="submit" style={{ background: 'var(--accent-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
-            Add
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <input 
+              name="description" 
+              placeholder="Role description (e.g. Lead AI Researcher)" 
+              style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+            />
+            <button type="submit" style={{ background: 'var(--accent-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              Add Team Member
+            </button>
+          </div>
         </form>
         <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '2.5rem 0' }} />
 

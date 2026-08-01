@@ -30,8 +30,11 @@ export default async function Header() {
         
         {user ? (
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <Link href="/dashboard" className={styles.primaryButton}>
+            <Link href="/dashboard" className={styles.link}>
               Dashboard
+            </Link>
+            <Link href="/onboard" className={styles.primaryButton}>
+              PKI Keys
             </Link>
             <form action={handleLogout}>
               <button type="submit" className={styles.button}>
