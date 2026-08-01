@@ -28,6 +28,19 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
     .select('role, developers(github_username)')
     .eq('module_id', params.id);
 
+  async function updateCiKey(formData: FormData) {
+    'use server';
+    const supabaseAction = await createClient();
+    const ciKey = formData.get('ciKey') as string;
+
+    await supabaseAction
+      .from('modules')
+      .update({ ci_public_key_hex: ciKey || null })
+      .eq('id', params.id);
+
+    revalidatePath(`/dashboard/module/${params.id}`);
+  }
+
   async function addCollaborator(formData: FormData) {
     'use server';
     const supabaseAction = await createClient();
@@ -100,6 +113,26 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
           </div>
           <button type="submit" style={{ background: 'var(--accent-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
             Add
+          </button>
+        </form>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '2.5rem 0' }} />
+
+        <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>CI/CD Public Key (Dual Signature)</h3>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+          To enforce SLSA dual-signatures, paste the public key of your automated GitHub Actions runner. Releases will require signatures from both a human maintainer AND this CI key.
+        </p>
+        
+        <form action={updateCiKey} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <input 
+              name="ciKey" 
+              placeholder="e.g. a1b2c3d4..." 
+              defaultValue={module.ci_public_key_hex || ''}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.2)', color: 'white', fontFamily: 'monospace' }}
+            />
+          </div>
+          <button type="submit" style={{ background: 'var(--border-color)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
+            Save Key
           </button>
         </form>
       </div>
