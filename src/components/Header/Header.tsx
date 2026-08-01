@@ -1,10 +1,18 @@
 import Link from 'next/link';
 import styles from './Header.module.css';
 import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
 
 export default async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  const handleLogout = async () => {
+    'use server';
+    const supabaseAction = await createClient();
+    await supabaseAction.auth.signOut();
+    redirect('/login');
+  };
 
   return (
     <header className={styles.header}>
@@ -21,9 +29,16 @@ export default async function Header() {
         </a>
         
         {user ? (
-          <Link href="/dashboard" className={styles.primaryButton}>
-            Dashboard
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <Link href="/dashboard" className={styles.primaryButton}>
+              Dashboard
+            </Link>
+            <form action={handleLogout}>
+              <button type="submit" className={styles.button}>
+                Log Out
+              </button>
+            </form>
+          </div>
         ) : (
           <Link href="/login" className={styles.button}>
             Log In
