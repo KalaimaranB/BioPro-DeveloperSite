@@ -11,11 +11,11 @@ export default async function NewModulePage() {
 
   const { data: developer } = await supabase
     .from('developers')
-    .select('public_key_hex')
+    .select('public_key_hex, issuer_signature')
     .eq('id', user.id)
     .single();
 
-  if (!developer?.public_key_hex) {
+  if (!developer?.public_key_hex || !developer?.issuer_signature) {
     redirect('/onboard');
   }
 

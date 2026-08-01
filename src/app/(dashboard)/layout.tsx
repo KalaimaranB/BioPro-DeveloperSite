@@ -16,11 +16,11 @@ export default async function DashboardLayout({
 
   const { data: developer } = await supabase
     .from('developers')
-    .select('public_key_hex')
+    .select('public_key_hex, issuer_signature')
     .eq('id', user.id)
     .single();
 
-  const hasOnboarded = !!developer?.public_key_hex;
+  const isTrusted = !!(developer?.public_key_hex && developer?.issuer_signature);
 
   return (
     <>
@@ -30,7 +30,7 @@ export default async function DashboardLayout({
           <div className="glass-panel" style={{ padding: '1rem', position: 'sticky', top: '2rem' }}>
             <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Menu</h3>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {hasOnboarded ? (
+              {isTrusted ? (
                 <>
                   <li>
                     <a href="/dashboard" style={{ display: 'block', padding: '0.5rem', borderRadius: '4px', color: 'var(--text-primary)' }}>Overview</a>
@@ -42,7 +42,7 @@ export default async function DashboardLayout({
               ) : null}
               <li>
                 <a href="/onboard" style={{ display: 'block', padding: '0.5rem', borderRadius: '4px', color: 'var(--text-primary)' }}>
-                  {hasOnboarded ? 'PKI Keys' : 'PKI Keys (Setup Required)'}
+                  {isTrusted ? 'PKI Keys' : 'PKI Keys (Setup Required)'}
                 </a>
               </li>
             </ul>

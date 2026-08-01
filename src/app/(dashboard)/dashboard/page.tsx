@@ -15,7 +15,7 @@ export default async function DashboardOverview() {
     .eq('id', user.id)
     .single();
 
-  if (!developer?.public_key_hex) {
+  if (!developer?.public_key_hex || !developer?.issuer_signature) {
     redirect('/onboard');
   }
 
