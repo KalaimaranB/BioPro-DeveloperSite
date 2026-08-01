@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export default async function ModuleSettingsPage({ params }: { params: { id: string } }) {
+export default async function ModuleSettingsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -12,7 +13,7 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
   const { data: collab } = await supabase
     .from('module_collaborators')
     .select('role, modules(*)')
-    .eq('module_id', params.id)
+    .eq('module_id', id)
     .eq('developer_id', user.id)
     .single();
 
@@ -26,7 +27,7 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
   const { data: allCollabs } = await supabase
     .from('module_collaborators')
     .select('role, developers(github_username)')
-    .eq('module_id', params.id);
+    .eq('module_id', id);
 
   async function updateCiKey(formData: FormData) {
     'use server';
@@ -36,9 +37,9 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
     await supabaseAction
       .from('modules')
       .update({ ci_public_key_hex: ciKey || null })
-      .eq('id', params.id);
+      .eq('id', id);
 
-    revalidatePath(`/dashboard/module/${params.id}`);
+    revalidatePath(`/dashboard/module/${id}`);
   }
 
   async function addCollaborator(formData: FormData) {
@@ -61,12 +62,12 @@ export default async function ModuleSettingsPage({ params }: { params: { id: str
     await supabaseAction
       .from('module_collaborators')
       .insert({
-        module_id: params.id,
+        module_id: id,
         developer_id: dev.id,
         role: role
       });
 
-    revalidatePath(`/dashboard/module/${params.id}`);
+    revalidatePath(`/dashboard/module/${id}`);
   }
 
   return (
