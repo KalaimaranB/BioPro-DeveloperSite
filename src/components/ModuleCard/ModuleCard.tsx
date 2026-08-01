@@ -1,6 +1,7 @@
 import styles from './ModuleCard.module.css';
 
 interface ModuleCardProps {
+  id?: string;
   namespace: string;
   pluginName: string;
   description: string | null;
@@ -9,6 +10,7 @@ interface ModuleCardProps {
 }
 
 export default function ModuleCard({
+  id,
   namespace,
   pluginName,
   description,
@@ -39,6 +41,11 @@ export default function ModuleCard({
           </div>
         )}
         
+        {id && (
+          <a href={`/dashboard/module/${id}`} className={styles.repoLink} style={{ marginRight: '1rem', color: 'var(--text-secondary)' }}>
+            Settings
+          </a>
+        )}
         <a 
           href={repositoryUrl} 
           target="_blank" 

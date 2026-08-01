@@ -27,12 +27,19 @@ export default async function NewModulePage() {
     
     if (!actionUser) throw new Error('Unauthorized');
 
-    const namespace = formData.get('namespace') as string;
     const pluginName = formData.get('pluginName') as string;
     const description = formData.get('description') as string;
     const repositoryUrl = formData.get('repositoryUrl') as string;
 
-    const { error } = await supabaseAction
+    const { data: actionDeveloper } = await supabaseAction
+      .from('developers')
+      .select('github_username')
+      .eq('id', actionUser.id)
+      .single();
+
+    const namespace = actionDeveloper?.github_username || 'unknown';
+
+    const { data: newModule, error } = await supabaseAction
       .from('modules')
       .insert({
         developer_id: actionUser.id,
@@ -40,13 +47,25 @@ export default async function NewModulePage() {
         plugin_name: pluginName,
         description,
         repository_url: repositoryUrl
-      });
+      }).select().single();
 
     if (error) {
       if (error.code === '23505') {
-        throw new Error('A module with this namespace and name already exists.');
+        throw new Error('A module with this name already exists in your namespace.');
       }
       throw new Error(error.message);
+    }
+
+    const { error: collabError } = await supabaseAction
+      .from('module_collaborators')
+      .insert({
+        module_id: newModule.id,
+        developer_id: actionUser.id,
+        role: 'owner'
+      });
+
+    if (collabError) {
+      throw new Error('Failed to assign module ownership: ' + collabError.message);
     }
 
     revalidatePath('/dashboard');

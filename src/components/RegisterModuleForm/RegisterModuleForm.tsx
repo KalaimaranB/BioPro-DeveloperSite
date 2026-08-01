@@ -35,22 +35,7 @@ export default function RegisterModuleForm({
       </p>
 
       <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label className={styles.label} htmlFor="namespace">
-            Namespace
-          </label>
-          <input
-            type="text"
-            id="namespace"
-            name="namespace"
-            className={styles.input}
-            placeholder="e.g., KalaimaranB"
-            required
-            pattern="^[a-zA-Z0-9-]+$"
-            title="Alphanumeric characters and hyphens only"
-          />
-          <span className={styles.hint}>Used as a prefix. No spaces or special characters.</span>
-        </div>
+
 
         <div className={styles.formGroup}>
           <label className={styles.label} htmlFor="pluginName">

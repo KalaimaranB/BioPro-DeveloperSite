@@ -20,10 +20,12 @@ export default async function DashboardOverview() {
   }
 
   // Fetch their modules
-  const { data: modules } = await supabase
-    .from('modules')
-    .select('*')
+  const { data: collaboratorRows } = await supabase
+    .from('module_collaborators')
+    .select('module_id, modules(*)')
     .eq('developer_id', user.id);
+
+  const modules = collaboratorRows?.map((row: any) => row.modules) || [];
 
   return (
     <div>
@@ -51,9 +53,10 @@ export default async function DashboardOverview() {
           <p style={{ color: 'var(--text-secondary)' }}>You haven&apos;t registered any modules yet.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {modules.map((mod) => (
+            {modules.map((mod: any) => (
               <ModuleCard 
                 key={mod.id}
+                id={mod.id}
                 namespace={mod.namespace}
                 pluginName={mod.plugin_name}
                 description={mod.description}
