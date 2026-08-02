@@ -2,7 +2,6 @@
 
 import * as ed from '@noble/ed25519';
 import { sha512 } from '@noble/hashes/sha2.js';
-ed.hashes.sha512 = sha512;
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -33,8 +32,10 @@ export default function KeyGeneratorWizard() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGenerate = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setError(null);
 
     if (passphrase.length < 12) {
@@ -48,6 +49,9 @@ export default function KeyGeneratorWizard() {
 
     setIsGenerating(true);
     try {
+      // Initialize noble/ed25519 hash here to avoid top-level SSR/Hydration crashes
+      ed.hashes.sha512 = sha512;
+
       // 1. Generate new Ed25519 Keypair (32 bytes of secure randomness)
       const privateKey = crypto.getRandomValues(new Uint8Array(32));
       const publicKey = await ed.getPublicKeyAsync(privateKey);
@@ -133,7 +137,8 @@ export default function KeyGeneratorWizard() {
           </div>
 
           <button 
-            type="submit" 
+            type="button" 
+            onClick={handleGenerate}
             className={styles.button}
             disabled={isGenerating || !passphrase || !confirmPassphrase}
           >
