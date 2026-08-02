@@ -9,8 +9,17 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && sessionData?.user) {
+      const user = sessionData.user;
+      
+      // Ensure a row exists in the developers table
+      await supabase.from('developers').upsert({
+        id: user.id,
+        github_username: user.user_metadata.user_name || user.email?.split('@')[0] || 'unknown',
+        github_id: user.user_metadata.provider_id || user.id
+      }, { onConflict: 'id' });
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

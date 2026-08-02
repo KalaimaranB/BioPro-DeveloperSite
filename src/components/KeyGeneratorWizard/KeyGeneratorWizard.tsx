@@ -76,11 +76,14 @@ export default function KeyGeneratorWizard() {
       payload.set(new Uint8Array(encryptedContent), salt.length + iv.length);
       const encryptedPrivateKeyHex = toHex(payload);
 
-      // 3. Save directly to database using RLS
-      const { error: updateError } = await supabase.from('developers').update({
+      // 3. Save directly to database using RLS (Upsert ensures the row exists)
+      const { error: updateError } = await supabase.from('developers').upsert({
+        id: user.id,
+        github_username: user.user_metadata?.user_name || user.email?.split('@')[0] || 'unknown',
+        github_id: user.user_metadata?.provider_id || user.id,
         public_key_hex: publicKeyHex,
         encrypted_private_key: encryptedPrivateKeyHex
-      }).eq('id', user.id);
+      }, { onConflict: 'id' });
 
       if (updateError) throw new Error(updateError.message);
       
