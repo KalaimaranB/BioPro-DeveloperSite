@@ -32,8 +32,7 @@ function CallbackHandler() {
           if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && currentSession) {
             try {
               await syncDeveloperProfile();
-              router.push(nextUrl);
-              router.refresh();
+              window.location.href = nextUrl;
             } catch (err: any) {
               router.push(`/login?error=${encodeURIComponent(err.message || 'SyncFailed')}`);
             }
@@ -49,8 +48,7 @@ function CallbackHandler() {
               router.push(`/login?error=${encodeURIComponent('No Session Established')}`);
             } else {
                syncDeveloperProfile().then(() => {
-                 router.push(nextUrl);
-                 router.refresh();
+                 window.location.href = nextUrl;
                }).catch((err: any) => {
                  router.push(`/login?error=${encodeURIComponent(err.message || 'SyncFailed')}`);
                });
@@ -61,8 +59,7 @@ function CallbackHandler() {
       } else {
         // Session already exists from parsing the URL
         syncDeveloperProfile().then(() => {
-          router.push(nextUrl);
-          router.refresh();
+          window.location.href = nextUrl;
         }).catch((err: any) => {
           router.push(`/login?error=${encodeURIComponent(err.message || 'SyncFailed')}`);
         });
