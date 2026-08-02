@@ -4,8 +4,8 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import * as ed from '@noble/ed25519';
 // Configure noble to use webcrypto for sha512 (required in Node.js)
-import { sha512 } from '@noble/hashes/sha512';
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+import { sha512 } from '@noble/hashes/sha2.js';
+ed.hashes.sha512 = sha512;
 
 function fromHex(hex: string): Uint8Array {
   const bytes = new Uint8Array(hex.length / 2);

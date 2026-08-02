@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import * as ed from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha512';
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+import { sha512 } from '@noble/hashes/sha2.js';
+ed.hashes.sha512 = sha512;
 
 function fromHex(hex: string): Uint8Array {
   const bytes = new Uint8Array(hex.length / 2);
@@ -19,7 +19,7 @@ async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKe
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(passphrase), { name: "PBKDF2" }, false, ["deriveKey"])
   return await crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: salt as any, iterations: 100000, hash: "SHA-256" },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     false,
@@ -66,7 +66,7 @@ export default function TrustSigner({
       const aesKey = await deriveKey(passphrase, salt);
       let privateKeyBuffer;
       try {
-        privateKeyBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, ciphertext);
+        privateKeyBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, aesKey, ciphertext);
       } catch (err) {
         throw new Error("Invalid passphrase");
       }
