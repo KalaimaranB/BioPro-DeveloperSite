@@ -48,7 +48,7 @@ export default function RegisterModuleForm({
             className={styles.input}
             placeholder="e.g., genome-analyzer"
             required
-            pattern="^[a-zA-Z0-9-]+$"
+            pattern="^[a-zA-Z0-9\\-]+$"
             title="Alphanumeric characters and hyphens only"
           />
         </div>
