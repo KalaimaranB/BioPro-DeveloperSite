@@ -91,8 +91,7 @@ export default function KeyGeneratorWizard() {
       
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard');
-        router.refresh();
+        window.location.href = '/dashboard';
       }, 2000);
 
     } catch (err: any) {

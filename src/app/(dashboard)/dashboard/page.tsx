@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import ModuleCard from '@/components/ModuleCard/ModuleCard';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function DashboardOverview() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
