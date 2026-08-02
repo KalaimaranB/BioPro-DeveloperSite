@@ -48,26 +48,35 @@ export default function KeyGeneratorWizard() {
     }
 
     setIsGenerating(true);
+    console.log("[KeyGenerator] Starting generation...");
     try {
       // Initialize noble/ed25519 hash here to avoid top-level SSR/Hydration crashes
+      console.log("[KeyGenerator] Initializing noble hashes...");
       ed.hashes.sha512 = sha512;
 
-      // 1. Generate new Ed25519 Keypair (32 bytes of secure randomness)
+      console.log("[KeyGenerator] Generating private key...");
       const privateKey = crypto.getRandomValues(new Uint8Array(32));
+      
+      console.log("[KeyGenerator] Deriving public key async...");
       const publicKey = await ed.getPublicKeyAsync(privateKey);
       const publicKeyHex = toHex(publicKey);
+      console.log("[KeyGenerator] Public key derived successfully");
 
-      // 2. Encrypt Private Key (AES-GCM)
+      console.log("[KeyGenerator] Generating AES salt and IV...");
       const salt = crypto.getRandomValues(new Uint8Array(16));
       const iv = crypto.getRandomValues(new Uint8Array(12));
+      
+      console.log("[KeyGenerator] Deriving PBKDF2 key from passphrase...");
       const aesKey = await deriveKey(passphrase, salt);
       
+      console.log("[KeyGenerator] Encrypting private key with AES-GCM...");
       const encryptedContent = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv as any },
         aesKey,
         privateKey
       );
       
+      console.log("[KeyGenerator] Packing payload...");
       // Pack salt + iv + ciphertext into a single hex string for storage
       const payload = new Uint8Array(salt.length + iv.length + encryptedContent.byteLength);
       payload.set(salt, 0);
@@ -75,9 +84,10 @@ export default function KeyGeneratorWizard() {
       payload.set(new Uint8Array(encryptedContent), salt.length + iv.length);
       const encryptedPrivateKeyHex = toHex(payload);
 
+      console.log("[KeyGenerator] Saving to database via Server Action...");
       // 3. Save to database using Server Action (This clears Next.js Router Cache!)
       await saveDeveloperKeysAction(publicKeyHex, encryptedPrivateKeyHex);
-
+      console.log("[KeyGenerator] Saved successfully!");
       
       setSuccess(true);
       setTimeout(() => {
@@ -85,8 +95,11 @@ export default function KeyGeneratorWizard() {
         router.refresh();
       }, 2000);
 
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to generate keypair.');
+    } catch (err: any) {
+      console.error("[KeyGenerator] CRASH:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      window.alert(`Key Generation Failed: ${msg}\n\nPlease check your browser console for more details.`);
     } finally {
       setIsGenerating(false);
     }
