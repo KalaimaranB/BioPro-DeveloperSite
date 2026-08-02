@@ -9,13 +9,20 @@ export async function saveDeveloperKeysAction(publicKeyHex: string, encryptedPri
   
   if (authError || !user) throw new Error("Unauthorized");
 
-  const { error } = await supabase.from('developers').upsert({
+  console.log(`[saveDeveloperKeysAction] Upserting keys for user ${user.id}`);
+  const { data, error } = await supabase.from('developers').upsert({
     id: user.id,
     github_username: user.user_metadata?.user_name || user.email?.split('@')[0] || 'unknown',
     github_id: String(user.user_metadata?.provider_id || user.id),
     public_key_hex: publicKeyHex,
     encrypted_private_key: encryptedPrivateKeyHex
-  }, { onConflict: 'id' });
+  }, { onConflict: 'id' }).select();
+
+  console.log(`[saveDeveloperKeysAction] Upsert complete. Error: ${error?.message || 'none'}. Rows returned: ${data?.length}`);
+
+  if (data?.length === 0) {
+    throw new Error("Supabase RLS Policy silently rejected the update! Check your Postgres UPDATE policies.");
+  }
 
   if (error) {
     throw new Error(error.message);

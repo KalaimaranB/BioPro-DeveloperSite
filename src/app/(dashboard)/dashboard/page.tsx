@@ -12,13 +12,17 @@ export default async function DashboardOverview() {
   if (!user) redirect('/login');
 
   // Verify PKI Onboarding
-  const { data: developer } = await supabase
+  const { data: developer, error: devError } = await supabase
     .from('developers')
     .select('*')
     .eq('id', user.id)
     .single();
 
+  console.log(`[Dashboard] Fetched developer for ${user.id}. Error: ${devError?.message || 'none'}.`);
+  console.log(`[Dashboard] Developer data:`, developer);
+
   if (!developer?.public_key_hex || !developer?.issuer_signature) {
+    console.log(`[Dashboard] Redirecting to /onboard. Missing key: ${!developer?.public_key_hex}, Missing signature: ${!developer?.issuer_signature}`);
     redirect('/onboard');
   }
 

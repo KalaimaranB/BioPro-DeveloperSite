@@ -13,11 +13,14 @@ export default async function OnboardPage() {
 
   if (!user) redirect('/login');
 
-  const { data: developer } = await supabase
+  const { data: developer, error: devError } = await supabase
     .from('developers')
     .select('public_key_hex, issuer_signature, issuer_name')
     .eq('id', user.id)
     .single();
+
+  console.log(`[Onboard] Fetched developer for ${user.id}. Error: ${devError?.message || 'none'}.`);
+  console.log(`[Onboard] Developer data:`, developer);
 
   async function submitSignatureAction(formData: FormData) {
     'use server';
