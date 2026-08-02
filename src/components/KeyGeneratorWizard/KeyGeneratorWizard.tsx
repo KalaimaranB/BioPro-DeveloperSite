@@ -1,9 +1,29 @@
 'use client';
 
+import * as ed from '@noble/ed25519';
+import { sha512 } from '@noble/hashes/sha2.js';
+ed.hashes.sha512 = sha512;
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import styles from './KeyGeneratorWizard.module.css';
+
+async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
+  const encoder = new TextEncoder()
+  const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(passphrase), { name: "PBKDF2" }, false, ["deriveKey"])
+  return await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: salt as any, iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  )
+}
+
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 export default function KeyGeneratorWizard() {
   const [passphrase, setPassphrase] = useState('');
@@ -30,12 +50,39 @@ export default function KeyGeneratorWizard() {
     const supabase = createClient();
 
     try {
-      // Call the Edge Function to generate the keys
-      const { error: funcError } = await supabase.functions.invoke('onboard-developer', {
-        body: { passphrase },
-      });
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('You must be logged in to generate keys.');
 
-      if (funcError) throw new Error(funcError.message);
+      // 1. Generate new Ed25519 Keypair (32 bytes of secure randomness)
+      const privateKey = crypto.getRandomValues(new Uint8Array(32));
+      const publicKey = await ed.getPublicKeyAsync(privateKey);
+      const publicKeyHex = toHex(publicKey);
+
+      // 2. Encrypt Private Key (AES-GCM)
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const aesKey = await deriveKey(passphrase, salt);
+      
+      const encryptedContent = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv as any },
+        aesKey,
+        privateKey
+      );
+      
+      // Pack salt + iv + ciphertext into a single hex string for storage
+      const payload = new Uint8Array(salt.length + iv.length + encryptedContent.byteLength);
+      payload.set(salt, 0);
+      payload.set(iv, salt.length);
+      payload.set(new Uint8Array(encryptedContent), salt.length + iv.length);
+      const encryptedPrivateKeyHex = toHex(payload);
+
+      // 3. Save directly to database using RLS
+      const { error: updateError } = await supabase.from('developers').update({
+        public_key_hex: publicKeyHex,
+        encrypted_private_key: encryptedPrivateKeyHex
+      }).eq('id', user.id);
+
+      if (updateError) throw new Error(updateError.message);
       
       setSuccess(true);
       setTimeout(() => {
