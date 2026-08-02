@@ -19,15 +19,16 @@ export async function GET(request: Request) {
           id: user.id,
           github_username: user.user_metadata?.user_name || user.email?.split('@')[0] || 'unknown',
           github_id: String(user.user_metadata?.provider_id || user.id)
-        }, { onConflict: 'id' });
-      } catch (err) {
-        console.error("Failed to insert developer record in callback:", err);
+        }, { onConflict: 'id' }).throwOnError(); // Explicitly throw on error to catch it
+      } catch (err: any) {
+        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(err.message || 'DatabaseError')}`);
       }
 
       return NextResponse.redirect(`${origin}${next}`);
+    } else if (error) {
+      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message || 'ExchangeFailed')}`);
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=OAuthFailed`);
+  return NextResponse.redirect(`${origin}/login?error=NoCodeProvided`);
 }

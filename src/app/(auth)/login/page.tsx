@@ -1,10 +1,13 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -29,6 +32,12 @@ export default function LoginPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
           Authenticate with GitHub to access the BioPro Developer Portal and manage your PKI trust anchors.
         </p>
+
+        {error && (
+          <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.75rem', borderRadius: '6px', marginBottom: '1.5rem', fontWeight: 500 }}>
+            Login Failed: {decodeURIComponent(error)}
+          </div>
+        )}
         
         <button 
           onClick={handleLogin}
@@ -54,5 +63,13 @@ export default function LoginPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
