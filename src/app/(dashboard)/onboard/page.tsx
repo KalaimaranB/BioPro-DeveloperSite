@@ -22,6 +22,10 @@ export default async function OnboardPage() {
   console.log(`[Onboard] Fetched developer for ${user.id}. Error: ${devError?.message || 'none'}.`);
   console.log(`[Onboard] Developer data:`, developer);
 
+  if (devError) {
+    throw new Error(`Database Error when fetching your profile: ${devError.message}. (Are your RLS policies correctly configured?)`);
+  }
+
   async function submitSignatureAction(formData: FormData) {
     'use server';
     const supabaseAction = await createClient();

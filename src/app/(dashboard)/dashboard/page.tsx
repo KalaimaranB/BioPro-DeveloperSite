@@ -21,6 +21,10 @@ export default async function DashboardOverview() {
   console.log(`[Dashboard] Fetched developer for ${user.id}. Error: ${devError?.message || 'none'}.`);
   console.log(`[Dashboard] Developer data:`, developer);
 
+  if (devError) {
+    throw new Error(`Database Error when fetching your profile: ${devError.message}. (Are your RLS policies correctly configured?)`);
+  }
+
   if (!developer?.public_key_hex || !developer?.issuer_signature) {
     console.log(`[Dashboard] Redirecting to /onboard. Missing key: ${!developer?.public_key_hex}, Missing signature: ${!developer?.issuer_signature}`);
     redirect('/onboard');
