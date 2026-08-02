@@ -42,7 +42,6 @@ export default async function NewModulePage() {
     const { data: newModule, error } = await supabaseAction
       .from('modules')
       .insert({
-        developer_id: actionUser.id,
         namespace,
         plugin_name: pluginName,
         description,
