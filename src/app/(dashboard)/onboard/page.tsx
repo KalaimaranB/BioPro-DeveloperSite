@@ -15,7 +15,7 @@ export default async function OnboardPage() {
 
   const { data: developer, error: devError } = await supabase
     .from('developers')
-    .select('public_key_hex, issuer_signature, issuer_name')
+    .select('public_key_hex, issuer_signature, issuer_public_key_hex')
     .eq('id', user.id)
     .single();
 
@@ -23,15 +23,8 @@ export default async function OnboardPage() {
   console.log(`[Onboard] Developer data:`, developer);
 
   if (devError) {
-    return (
-      <div style={{ color: 'red', padding: '2rem', border: '1px solid red', margin: '2rem' }}>
-        <h2>CRITICAL DATABASE ERROR</h2>
-        <p>Your Vercel app failed to query Supabase for your profile. This usually means either your RLS SELECT policies are missing, or Vercel is connected to the wrong Supabase project.</p>
-        <p><strong>Raw Postgres Error:</strong> {devError.message}</p>
-        <p><strong>Code:</strong> {devError.code}</p>
-        <p><strong>Details:</strong> {devError.details}</p>
-      </div>
-    );
+    console.error(`[Onboard] Database Error:`, devError);
+    redirect('/login?error=DatabaseError');
   }
 
   async function submitSignatureAction(formData: FormData) {
@@ -40,12 +33,10 @@ export default async function OnboardPage() {
     const { data: { user: actionUser } } = await supabaseAction.auth.getUser();
     if (!actionUser) throw new Error('Unauthorized');
 
-    const issuerName = formData.get('issuerName') as string;
     const issuerPubKey = formData.get('issuerPubKey') as string;
     const signature = formData.get('signature') as string;
 
     const { error } = await supabaseAction.from('developers').update({
-      issuer_name: issuerName,
       issuer_public_key_hex: issuerPubKey,
       issuer_signature: signature
     }).eq('id', actionUser.id);
@@ -75,10 +66,6 @@ export default async function OnboardPage() {
           <form action={submitSignatureAction} style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h3>Upload Signature</h3>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Issuer Name</label>
-              <input type="text" name="issuerName" required placeholder="e.g. BioPro_Root_Authority" style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', color: 'white' }} />
-            </div>
-            <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Issuer Public Key (Hex)</label>
               <input type="text" name="issuerPubKey" required placeholder="Hexadecimal string..." style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', color: 'white' }} />
             </div>
@@ -101,7 +88,7 @@ export default async function OnboardPage() {
             <strong>Your Public Key:</strong> {developer.public_key_hex}
           </div>
           <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-            <strong>Signed By:</strong> {developer.issuer_name}
+            <strong>Signed By (Public Key):</strong> {developer.issuer_public_key_hex}
           </div>
 
           <TrustChain startingPublicKey={developer.public_key_hex} />
