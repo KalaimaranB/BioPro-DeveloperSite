@@ -30,7 +30,23 @@ export default async function DashboardOverview() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Welcome, @{developer.github_username}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h1 style={{ margin: 0 }}>Welcome, @{developer.github_username}</h1>
+          {developer.trust_level && (
+            <span style={{ 
+              background: developer.trust_level === 'root' ? 'rgba(255, 152, 0, 0.2)' : developer.trust_level === 'node' ? 'rgba(88, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+              color: developer.trust_level === 'root' ? '#ff9800' : developer.trust_level === 'node' ? '#58a6ff' : 'var(--text-secondary)',
+              padding: '0.25rem 0.75rem',
+              borderRadius: '16px',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              border: `1px solid ${developer.trust_level === 'root' ? 'rgba(255, 152, 0, 0.5)' : developer.trust_level === 'node' ? 'rgba(88, 166, 255, 0.5)' : 'rgba(255, 255, 255, 0.2)'}`,
+              textTransform: 'uppercase'
+            }}>
+              {developer.trust_level}
+            </span>
+          )}
+        </div>
         <a 
           href="/dashboard/new" 
           style={{ 
