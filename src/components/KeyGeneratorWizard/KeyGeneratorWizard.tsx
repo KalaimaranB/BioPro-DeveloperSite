@@ -6,7 +6,7 @@ ed.hashes.sha512 = sha512;
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { saveDeveloperKeysAction } from '@/app/(dashboard)/onboard/actions';
 import styles from './KeyGeneratorWizard.module.css';
 
 async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
@@ -47,12 +47,7 @@ export default function KeyGeneratorWizard() {
     }
 
     setIsGenerating(true);
-    const supabase = createClient();
-
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error('You must be logged in to generate keys.');
-
       // 1. Generate new Ed25519 Keypair (32 bytes of secure randomness)
       const privateKey = crypto.getRandomValues(new Uint8Array(32));
       const publicKey = await ed.getPublicKeyAsync(privateKey);
@@ -76,16 +71,9 @@ export default function KeyGeneratorWizard() {
       payload.set(new Uint8Array(encryptedContent), salt.length + iv.length);
       const encryptedPrivateKeyHex = toHex(payload);
 
-      // 3. Save directly to database using RLS (Upsert ensures the row exists)
-      const { error: updateError } = await supabase.from('developers').upsert({
-        id: user.id,
-        github_username: user.user_metadata?.user_name || user.email?.split('@')[0] || 'unknown',
-        github_id: user.user_metadata?.provider_id || user.id,
-        public_key_hex: publicKeyHex,
-        encrypted_private_key: encryptedPrivateKeyHex
-      }, { onConflict: 'id' });
+      // 3. Save to database using Server Action (This clears Next.js Router Cache!)
+      await saveDeveloperKeysAction(publicKeyHex, encryptedPrivateKeyHex);
 
-      if (updateError) throw new Error(updateError.message);
       
       setSuccess(true);
       setTimeout(() => {

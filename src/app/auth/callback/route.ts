@@ -14,11 +14,15 @@ export async function GET(request: Request) {
       const user = sessionData.user;
       
       // Ensure a row exists in the developers table
-      await supabase.from('developers').upsert({
-        id: user.id,
-        github_username: user.user_metadata.user_name || user.email?.split('@')[0] || 'unknown',
-        github_id: user.user_metadata.provider_id || user.id
-      }, { onConflict: 'id' });
+      try {
+        await supabase.from('developers').upsert({
+          id: user.id,
+          github_username: user.user_metadata?.user_name || user.email?.split('@')[0] || 'unknown',
+          github_id: String(user.user_metadata?.provider_id || user.id)
+        }, { onConflict: 'id' });
+      } catch (err) {
+        console.error("Failed to insert developer record in callback:", err);
+      }
 
       return NextResponse.redirect(`${origin}${next}`);
     }
