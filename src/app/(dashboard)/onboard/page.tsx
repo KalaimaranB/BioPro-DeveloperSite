@@ -23,7 +23,15 @@ export default async function OnboardPage() {
   console.log(`[Onboard] Developer data:`, developer);
 
   if (devError) {
-    throw new Error(`Database Error when fetching your profile: ${devError.message}. (Are your RLS policies correctly configured?)`);
+    return (
+      <div style={{ color: 'red', padding: '2rem', border: '1px solid red', margin: '2rem' }}>
+        <h2>CRITICAL DATABASE ERROR</h2>
+        <p>Your Vercel app failed to query Supabase for your profile. This usually means either your RLS SELECT policies are missing, or Vercel is connected to the wrong Supabase project.</p>
+        <p><strong>Raw Postgres Error:</strong> {devError.message}</p>
+        <p><strong>Code:</strong> {devError.code}</p>
+        <p><strong>Details:</strong> {devError.details}</p>
+      </div>
+    );
   }
 
   async function submitSignatureAction(formData: FormData) {
