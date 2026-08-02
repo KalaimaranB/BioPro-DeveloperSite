@@ -34,6 +34,7 @@ export default async function TrustNetworkPage() {
     .select('id, github_username, public_key_hex')
     .is('issuer_signature', null)
     .not('public_key_hex', 'is', null)
+    .neq('trust_level', 'root')
     .neq('id', user.id);
 
   // Fetch approved developers
