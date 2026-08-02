@@ -14,6 +14,18 @@ export default async function Header() {
     redirect('/login');
   };
 
+  let trustLevel = 'leaf';
+  if (user) {
+    const { data: developer } = await supabase
+      .from('developers')
+      .select('trust_level')
+      .eq('id', user.id)
+      .single();
+    if (developer?.trust_level) {
+      trustLevel = developer.trust_level;
+    }
+  }
+
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.logo}>
@@ -33,6 +45,11 @@ export default async function Header() {
             <Link href="/dashboard" className={styles.link}>
               Dashboard
             </Link>
+            {(trustLevel === 'root' || trustLevel === 'node') && (
+              <Link href="/trust-network" className={styles.link} style={{ color: '#ff9800' }}>
+                Trust Network
+              </Link>
+            )}
             <Link href="/onboard" className={styles.primaryButton}>
               PKI Keys
             </Link>

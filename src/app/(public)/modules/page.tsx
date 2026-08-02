@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
 import ModuleCard from '@/components/ModuleCard/ModuleCard';
-import Header from '@/components/Header/Header';
 
 export default async function PublicRegistryPage() {
   const supabase = await createClient();
@@ -13,7 +12,6 @@ export default async function PublicRegistryPage() {
 
   return (
     <>
-      <Header />
       <main className="container" style={{ padding: '4rem 2rem' }}>
         <h1 style={{ marginBottom: '1rem', fontSize: '2.5rem' }}>BioPro Registry</h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>
