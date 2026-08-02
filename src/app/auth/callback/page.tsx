@@ -29,7 +29,7 @@ function CallbackHandler() {
         // Sometimes it takes a few milliseconds for onAuthStateChange to fire after the hash is parsed.
         // We fallback to a listener.
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-          if (event === 'SIGNED_IN' && currentSession) {
+          if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && currentSession) {
             try {
               await syncDeveloperProfile();
               router.push(nextUrl);
@@ -43,13 +43,20 @@ function CallbackHandler() {
         // Timeout fallback if no session is established
         setTimeout(() => {
           subscription.unsubscribe();
-          // If still no session, redirect to login
+          // If still no session, redirect to login, else try to sync
           supabase.auth.getSession().then(({ data: { session: checkSession } }) => {
             if (!checkSession) {
               router.push(`/login?error=${encodeURIComponent('No Session Established')}`);
+            } else {
+               syncDeveloperProfile().then(() => {
+                 router.push(nextUrl);
+                 router.refresh();
+               }).catch((err: any) => {
+                 router.push(`/login?error=${encodeURIComponent(err.message || 'SyncFailed')}`);
+               });
             }
           });
-        }, 5000);
+        }, 3000);
 
       } else {
         // Session already exists from parsing the URL
